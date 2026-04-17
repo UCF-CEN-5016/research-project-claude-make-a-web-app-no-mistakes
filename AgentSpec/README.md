@@ -4,6 +4,71 @@ AgentSpec is a framework for enforcing safety in Large Language Model (LLM) agen
 
 ---
 
+## Beginner Quick Start (Step-by-Step)
+
+Use these steps if this is your first time running the project.
+
+### 1. Open terminal in the `AgentSpec` folder
+
+If you are currently in the repository root:
+
+```bash
+cd AgentSpec
+```
+
+### 2. Create and activate a Python virtual environment
+
+Windows (PowerShell):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+macOS/Linux:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirement.txt
+```
+
+### 4. Create `.env` with your API key(s)
+
+Create a `.env` file in this folder and add the keys needed by your selected model provider:
+
+```env
+OPENAI_API_KEY=your_key_here
+ANTHROPIC_API_KEY=your_key_here
+```
+
+### 5. Run basic checks from the menu script
+
+```bash
+bash src/run.sh
+```
+
+Then choose an option in the menu:
+
+- `2` to run parser unit tests
+- `5` to run controlled agent import smoke test
+- `9` to run the full local smoke suite
+
+### 6. Optional: Regenerate parser files
+
+Only needed when grammar changes are made.
+
+```bash
+java -jar ./spec_lang/antlr-4.13.2-complete.jar -Dlanguage=Python3 ./spec_lang/AgentSpec.g4
+```
+
+---
+
 ## 🚀 Getting Started
 
 ### 1. Installation
