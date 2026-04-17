@@ -30,7 +30,10 @@ source .venv/bin/activate
 
 ### 3. Install dependencies
 
+Navigate into the `AgentSpec` subdirectory first; all subsequent commands in this guide are run from there.
+
 ```bash
+cd AgentSpec
 pip install -r requirement.txt
 ```
 
@@ -40,8 +43,8 @@ These commands are deterministic and were validated locally on a fresh virtual e
 
 ```bash
 python -m unittest src.spec_lang.test_parse
-python -c "from src.spec_lang.controlled_agent_excector import initialize_controlled_agent; print('Import OK:', initialize_controlled_agent.__name__)"
-python -m py_compile src/spec_lang/demo_langchain_working.py src/spec_lang/controlled_agent_excector.py src/spec_lang/rule.py src/rules/manual/pythonrepl.py src/rules/manual/table.py
+python -c "from src.controlled_agent_excector import initialize_controlled_agent; print('Import OK:', initialize_controlled_agent.__name__)"
+python -m py_compile src/demos.py src/controlled_agent_excector.py src/rule.py src/rules/manual/pythonrepl.py src/rules/manual/table.py
 ```
 
 ### 5. Optional: regenerate parser from grammar
@@ -52,13 +55,12 @@ Only needed if you edit `src/spec_lang/AgentSpec.g4`.
 java -jar ./src/spec_lang/antlr-4.13.2-complete.jar -Dlanguage=Python3 ./src/spec_lang/AgentSpec.g4
 ```
 
-### 6. Optional: use the menu runner
+### 6. Optional: run the provided shell script
 
-The repository includes `run.sh` with menu options for smoke tests. If Bash reports `invalid option name: pipefail`, convert line endings to LF first.
+The repository ships a shell script at `src/run.sh`. If you want to use it, invoke it with its actual path:
 
 ```bash
-dos2unix run.sh
-bash ./run.sh
+bash ./src/run.sh
 ```
 
 ## Reproducing Results
@@ -74,9 +76,11 @@ That document includes:
 
 ## Usage with LangChain
 
+Run the following from the `AgentSpec/` directory (i.e. after `cd AgentSpec`):
+
 ```python
-from src.spec_lang.controlled_agent_excector import initialize_controlled_agent
-from src.spec_lang.rule import Rule
+from src.controlled_agent_excector import initialize_controlled_agent
+from src.rule import Rule
 from langchain_experimental.utilities import PythonREPL
 from langchain_openai import ChatOpenAI
 
@@ -108,20 +112,19 @@ print(response)
 Notes:
 
 - `OPENAI_API_KEY` is required for OpenAI-backed examples.
-- `user_inspection` prompts on stdin by default. Pass `approval_callback=...` to integrate approval into a custom UI.
+- `user_inspection` prompts on stdin by default.
 
 ## Customizing AgentSpec Rules
 
 1. Match the rule event name to the actual tool name.
 2. Implement a predicate function with `(user_input, tool_input, intermediate_steps)`.
 3. Register the predicate in `src/rules/manual/table.py`.
-4. Use one enforcement strategy: `stop`, `user_inspection`, `invoke_action(...)`, or `llm_self_examine`.
+4. Use one enforcement strategy: `stop`, `user_inspection`, or `llm_self_reflect`.
 
 ## Known Limitations
 
 - Some benchmark-generation/evaluation scripts require external datasets or simulators not bundled in this repository.
 - LLM-backed evaluations require API credentials and may incur usage cost.
-- If `run.sh` is checked out with CRLF line endings, Bash execution will fail until converted to LF.
 
 ## Citation
 

@@ -17,14 +17,16 @@ This guide does not claim full from-scratch regeneration of every paper result b
 - Python 3.12+
 - Java 17+
 - Git
-- (Optional) Bash + `dos2unix` for `run.sh`
 
 ## Step 1: Clone and enter the repository
 
 ```bash
 git clone <repo-url>
 cd AgentSpec-CEN5016
+cd AgentSpec
 ```
+
+All subsequent commands in this guide are run from the `AgentSpec/` subdirectory.
 
 ## Step 2: Create a clean virtual environment
 
@@ -51,8 +53,6 @@ pip install -r requirement.txt
 
 ## Step 4: Reproduce core artifact checks
 
-Run these commands from repository root.
-
 ### 4.1 Parser unit tests
 
 ```bash
@@ -64,7 +64,7 @@ Expected outcome: test suite passes (`OK`).
 ### 4.2 Controlled-agent import smoke check
 
 ```bash
-python -c "from src.spec_lang.controlled_agent_excector import initialize_controlled_agent; print('Import OK:', initialize_controlled_agent.__name__)"
+python -c "from src.controlled_agent_excector import initialize_controlled_agent; print('Import OK:', initialize_controlled_agent.__name__)"
 ```
 
 Expected outcome: prints `Import OK: initialize_controlled_agent`.
@@ -72,7 +72,7 @@ Expected outcome: prints `Import OK: initialize_controlled_agent`.
 ### 4.3 Bytecode compilation smoke check
 
 ```bash
-python -m py_compile src/spec_lang/demo_langchain_working.py src/spec_lang/controlled_agent_excector.py src/spec_lang/rule.py src/rules/manual/pythonrepl.py src/rules/manual/table.py
+python -m py_compile src/demos.py src/controlled_agent_excector.py src/rule.py src/rules/manual/pythonrepl.py src/rules/manual/table.py
 ```
 
 Expected outcome: no errors (warnings may appear from regex escape sequences).
@@ -110,16 +110,13 @@ python -c "from pathlib import Path; p=Path('expres/toolemu/gpt4o-no_controll_ev
 
 Expected outcome: prints a positive record count (for the current artifact, `134`).
 
-## Optional: Use the interactive runner
+## Optional: Run the provided shell script
 
-The repository ships `run.sh` for interactive test execution.
+The repository ships `src/run.sh`. To use it:
 
 ```bash
-dos2unix run.sh
-bash ./run.sh
+bash ./src/run.sh
 ```
-
-Known caveat: if `run.sh` has CRLF line endings, Bash fails with `invalid option name: pipefail` until line endings are converted to LF.
 
 ## Credentials and External Requirements
 
