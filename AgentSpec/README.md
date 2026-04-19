@@ -4,71 +4,6 @@ AgentSpec is a framework for enforcing safety in Large Language Model (LLM) agen
 
 ---
 
-## Beginner Quick Start (Step-by-Step)
-
-Use these steps if this is your first time running the project.
-
-### 1. Open terminal in the `AgentSpec` folder
-
-If you are currently in the repository root:
-
-```bash
-cd AgentSpec
-```
-
-### 2. Create and activate a Python virtual environment
-
-Windows (PowerShell):
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-macOS/Linux:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install -r requirement.txt
-```
-
-### 4. Create `.env` with your API key(s)
-
-Create a `.env` file in this folder and add the keys needed by your selected model provider:
-
-```env
-OPENAI_API_KEY=your_key_here
-ANTHROPIC_API_KEY=your_key_here
-```
-
-### 5. Run basic checks from the menu script
-
-```bash
-bash src/run.sh
-```
-
-Then choose an option in the menu:
-
-- `2` to run parser unit tests
-- `5` to run controlled agent import smoke test
-- `9` to run the full local smoke suite
-
-### 6. Optional: Regenerate parser files
-
-Only needed when grammar changes are made.
-
-```bash
-java -jar ./spec_lang/antlr-4.13.2-complete.jar -Dlanguage=Python3 ./spec_lang/AgentSpec.g4
-```
-
----
-
 ## 🚀 Getting Started
 
 ### 1. Installation
@@ -91,7 +26,54 @@ langchain-text-splitters                 0.3.11
 ### 2. Generate the Parser (Only required if modifying the grammar)
 
 ```bash
-java -jar ./spec_lang/antlr-4.13.2-complete.jar -Dlanguage=Python3 ./spec_lang/AgentSpec.g4
+java -jar ./src/spec_lang/antlr-4.13.2-complete.jar -Dlanguage=Python3 ./src/spec_lang/AgentSpec.g4
+```
+
+## Running Experiments
+
+This project provides an interactive script to simplify running test configurations.
+
+### Prerequisites Checked by `run.sh`
+
+- Python available (from `.venv` if present, otherwise system `python`)
+- Dependency file exists (`requirement.txt` or `requirements.txt`)
+- Required Python modules are importable (antlr4 + langchain stack)
+
+### Numpad Key Mapping
+
+| Key | Test Configuration | What it runs |
+|---|---|---|
+| 1 | LangChain smoke demo | `python -m src.spec_lang.demo_langchain_working` |
+| 2 | Parser unit tests | `python -m unittest src.spec_lang.test_parse` |
+| 3 | Inline parse: user inspection | Parses a `user_inspection` inline rule |
+| 4 | Inline parse: stop | Parses a `stop` inline rule |
+| 5 | Controlled agent import smoke | Imports `initialize_controlled_agent` |
+| 6 | Predicate registry smoke | Confirms `is_destructive` is registered |
+| 7 | Bytecode compile smoke | Compiles key runtime files |
+| 8 | Regenerate parser | Runs ANTLR on `src/spec_lang/AgentSpec.g4` |
+| 9 | Full local smoke suite | Runs tests 2, 5, 6, and 7 |
+| 0 | Exit | Leaves the interactive menu |
+
+### How to Run
+
+```bash
+# Linux / Mac
+chmod +x run.sh
+./run.sh
+
+# Windows (Git Bash / WSL)
+bash run.sh
+
+# Windows (CMD / PowerShell)
+bash run.sh
+```
+
+You will see a menu where you can select a test using keys 1-9.
+
+You can also run a test directly:
+
+```bash
+bash run.sh 3
 ```
 
 ---
@@ -99,21 +81,16 @@ java -jar ./spec_lang/antlr-4.13.2-complete.jar -Dlanguage=Python3 ./spec_lang/A
 ## 🔧 Usage with LangChain
 
 ```python
-from controlled_agent_excector import initialize_controlled_agent 
-from langchain.tools import Tool
+from src.spec_lang.controlled_agent_excector import initialize_controlled_agent
+from src.rule import Rule
+
 from langchain_experimental.utilities import PythonREPL
 from langchain_openai import ChatOpenAI
-from langchain_community.tools import ShellTool
-
-from rule import Rule 
-import os
-import json
 
 # Initialize the LLM
-llm = ChatOpenAI(model = "gpt-4o", temperature=0)
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
  
-def demo_langchain(): 
-    
+def demo_langchain():
     example_rule = """rule @check_shell_exec
 trigger 
     PythonREPL
@@ -122,22 +99,26 @@ check
 enforce
     user_inspection
 end
-"""  
- 
-    rule = Rule.from_text(example_rule) 
+"""
 
-    tool = PythonREPL()  
-    # Initialize the Agent
-    tools = [tool]
-    # instead of use initialize agent from langchain, 
-    # add rule for initialize controlled agent, where rules are list of rule strings. 
-    agent = initialize_controlled_agent(tools, llm, agent="zero-shot-react-description", rules = [rule])
+    rule = Rule.from_text(example_rule)
 
-    # Interact with the Agent
+    tool = PythonREPL()
+    agent = initialize_controlled_agent(
+        tools=[tool],
+        llm=llm,
+        rules=[rule],
+    )
+
     response = agent.invoke("Can you help delete the unimportant txt file in current directory")
     print(response)
- 
 ```
+
+Notes:
+
+- `initialize_controlled_agent(...)` uses the `agent=` argument to select the agent implementation, so pass a value supported by the current AgentSpec/LangChain integration.
+- LangChain tools must be compatible `BaseTool` instances when used with AgentSpec-controlled agents.
+- `user_inspection` will prompt on stdin by default. Pass `approval_callback=...` if you want to integrate approval into your own UI.
 
 ## 🔧 Customizing AgentSpec Rule
 
@@ -183,8 +164,8 @@ PREDICATE : ... | 'is_destructive';
 2. **Register the function** in the rule interpreter:
 
 ```python
-from rules.manual.table import predicate_table
-from rule import is_destructive
+from src.rules.manual.table import predicate_table
+from src.rules.manual.terminal import is_destructive
 
 predicate_table['is_destructive'] = is_destructive
 ``` 
@@ -202,9 +183,13 @@ Specify one of the following enforcement modes in the rule body:
 
 - **`invoke_action(tool_name, tool_input)`**  
   Replaces the unsafe action with a known safe alternative and executes that instead.
+  In this runtime, `tool_name` must match a registered tool name.
+  Example: `invoke_action(safe_delete, "target.txt")`
 
 - **`llm_self_examine`**  
   Informs the LLM of the rule violation and prompts it to revise its plan while still trying to fulfill the original request in a safer manner.
+
+`llm_self_reflect` is still accepted as a compatibility alias.
 
 --- 
 
