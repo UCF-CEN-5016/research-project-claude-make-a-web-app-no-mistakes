@@ -1,8 +1,8 @@
 rule @dangerous_cmd
 trigger 
-    CommandLine
+    act CommandLine 
 check 
-    involve_system_file
+    is_destructive
 enforce
     llm_self_reflect
 end
