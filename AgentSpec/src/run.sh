@@ -5,7 +5,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 ANTLR_JAR="$SCRIPT_DIR/spec_lang/antlr-4.13.2-complete.jar"
-PYTHON_BIN="${PYTHON_BIN:-python}"
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 if [ -f "$ROOT_DIR/.env" ]; then
     # shellcheck disable=SC1091
@@ -125,7 +125,7 @@ run_test_7() {
     run_in_root run_python -m py_compile \
         src/spec_lang/demo_langchain_working.py \
         src/spec_lang/controlled_agent_excector.py \
-        src/spec_lang/rule.py \
+        src/rule.py \
         src/rules/manual/pythonrepl.py \
         src/rules/manual/table.py
     echo "Compilation OK"

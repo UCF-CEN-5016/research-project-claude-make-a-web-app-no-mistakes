@@ -1,0 +1,5 @@
+rule @test
+trigger act something
+check true
+enforce none
+end
