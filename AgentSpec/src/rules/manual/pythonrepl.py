@@ -141,8 +141,8 @@ def read_io(user_input, tool_input, intermediate_steps):
     patterns = {
         # r"(?:open\([^\)]*\)\s*\.?\s*(?:read(?:line)?\([^\)]*\))"
         r"(?:with\s+open\([^\)]*\)\s*as\s+\w+\s*:\s*(?:\w+\s*=\s*\w+\.?\s*(?:read(?:line)?\([^\)]*\))))",
-        "\.recv",
-        "os\.dup2"
+        r"\.recv",
+        r"os\.dup2"
     }
     return any(re.search(pattern, tool_input) for pattern in patterns) 
 
