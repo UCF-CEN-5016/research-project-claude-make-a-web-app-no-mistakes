@@ -1,3 +1,5 @@
+from .terminal import is_destructive
+
 predicate_table = {
-    "is_destructive": True
+    "is_destructive": is_destructive
 }
