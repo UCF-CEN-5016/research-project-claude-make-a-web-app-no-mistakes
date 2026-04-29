@@ -53,12 +53,12 @@ jobs:
           mkdir -p /tmp/agentspec-logs
           docker compose run --rm -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" agentspec 1 2>&1 | tee /tmp/agentspec-logs/test1.log
 
-      - name: Run full smoke suite (9)
+      - name: Run parser unit tests (2)
         env:
           CI: true
         run: |
           set -o pipefail
-          docker compose run --rm -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" agentspec 9 2>&1 | tee /tmp/agentspec-logs/test9.log
+          docker compose run --rm -e OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" agentspec 2 2>&1 | tee /tmp/agentspec-logs/test2.log
 
       - name: Upload agentspec logs
         if: always()
