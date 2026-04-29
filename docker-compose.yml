@@ -1,0 +1,28 @@
+services:
+  agentspec:
+    build:
+      context: ./AgentSpec
+      dockerfile: Dockerfile
+    
+    # Interactive terminal support for numpad menu
+    stdin_open: true
+    tty: true
+    
+    # Environment variables
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    
+    # Mount local .env file for API credentials
+    volumes:
+      - ./AgentSpec/.env:/app/.env:ro
+    
+    # Working directory
+    working_dir: /app
+    
+    # Keep container running for interactive use
+    restart: "no"
+    
+    # Pass arguments to entrypoint if needed
+    # Override with: docker compose run agentspec 9
+    # Or just docker compose up for interactive menu
